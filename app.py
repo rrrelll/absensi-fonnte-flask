@@ -1,7 +1,6 @@
 # app.py
 from flask import Flask, redirect, url_for
 from extensions import db, login_manager
-import pymysql
 import os
 
 # =========================================================
@@ -10,19 +9,30 @@ import os
 app = Flask(__name__)
 
 # =========================================================
-# KONFIG DATABASE UNTUK RAILWAY
+# KONFIG DATABASE UNTUK RAILWAY & LOCAL
 # =========================================================
-DB_HOST = os.getenv("DB_HOST", "localhost")
-DB_USER = os.getenv("DB_USER", "root")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "")
-DB_NAME = os.getenv("DB_NAME", "smkmuliabuana")
-DB_PORT = os.getenv("DB_PORT", 3306)
 
-app.config.update(
-    SQLALCHEMY_DATABASE_URI=f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}",
-    SQLALCHEMY_TRACK_MODIFICATIONS=False,
-    SECRET_KEY=os.getenv("SECRET_KEY", "supersecret")
-)
+# Jika Railway menyediakan variabel env, pakai itu
+MYSQLUSER = os.getenv("MYSQLUSER")
+MYSQLPASSWORD = os.getenv("MYSQLPASSWORD")
+MYSQLHOST = os.getenv("MYSQLHOST")
+MYSQLPORT = os.getenv("MYSQLPORT")
+MYSQLDATABASE = os.getenv("MYSQLDATABASE")
+
+if MYSQLUSER and MYSQLHOST:
+    # Mode DEPLOY (Railway)
+    app.config["SQLALCHEMY_DATABASE_URI"] = (
+        f"mysql+pymysql://{MYSQLUSER}:{MYSQLPASSWORD}"
+        f"@{MYSQLHOST}:{MYSQLPORT}/{MYSQLDATABASE}"
+    )
+else:
+    # Mode LOCAL (XAMPP)
+    app.config["SQLALCHEMY_DATABASE_URI"] = (
+        "mysql+pymysql://root:@localhost/smkmuliabuana"
+    )
+
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "supersecret")
 
 # =========================================================
 # Inisialisasi Ekstensi
@@ -66,7 +76,7 @@ def home():
     return redirect(url_for('auth.login'))
 
 # =========================================================
-# Run App (untuk lokal)
+# Jalankan untuk Lokal
 # =========================================================
 if __name__ == '__main__':
     app.run(debug=True)
