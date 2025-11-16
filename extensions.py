@@ -24,18 +24,28 @@ bcrypt = Bcrypt()
 # ====================================================
 def get_mysql_connection():
     """
-    Fungsi ini digunakan jika ingin menjalankan query SQL langsung
-    tanpa melalui SQLAlchemy.
+    Koneksi MySQL yang mengikuti environment Railway.
     """
+    import os
+
+    host = os.getenv("MYSQLHOST", "localhost")
+    user = os.getenv("MYSQLUSER", "root")
+    password = os.getenv("MYSQLPASSWORD", "")
+    database = os.getenv("MYSQLDATABASE", "smkmuliabuana")
+    port = int(os.getenv("MYSQLPORT", 3306))
+
     try:
         connection = pymysql.connect(
-            host='localhost',
-            user='root',
-            password='',
-            database='smkmuliabuana',
+            host=host,
+            user=user,
+            password=password,
+            database=database,
+            port=port,
             cursorclass=pymysql.cursors.DictCursor
         )
         return connection
+
     except pymysql.MySQLError as e:
-        print(f"❌ Gagal konek ke MySQL langsung: {e}")
+        print(f"❌ Gagal konek ke MySQL: {e}")
         return None
+
