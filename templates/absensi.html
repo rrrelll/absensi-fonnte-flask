@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Absensi Siswa - SMK Mulia Buana</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: #f5f7fb;
+    }
+    .main-content {
+      margin-left: 250px;
+      padding: 30px;
+      transition: margin-left 0.35s ease;
+    }
+    .sidebar.collapsed ~ .main-content {
+      margin-left: 80px;
+    }
+
+    .welcome {
+      background: linear-gradient(90deg, #007bff, #005dc1);
+      padding: 18px 25px;
+      border-radius: 12px;
+      color: #fff;
+      font-weight: 500;
+      margin-bottom: 25px;
+      box-shadow: 0 3px 8px rgba(39, 174, 96, 0.2);
+    }
+
+    /* Filter form */
+    form.filter {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+      border-top: 4px solid #007bff;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    select, button {
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button:hover {
+      background: #005dc1;
+    }
+
+    /* Tombol Cetak PDF */
+    .btn-pdf {
+      background: #16a34a;
+      margin-left: 10px;
+    }
+    .btn-pdf:hover {
+      background: #15803d;
+    }
+
+    /* Table style */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+      text-align: center;
+    }
+    th {
+      background: #007bff;
+      color: white;
+      font-weight: 600;
+    }
+
+    /* Status button style */
+    .status-wrap {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+    }
+    .status-btn {
+      width: 55px;
+      padding: 8px 0;
+      border-radius: 40px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: 0.2s ease;
+      letter-spacing: 1px;
+    }
+
+    /* Warna status lebih terang */
+    .status-btn[data-val="H"] { border-color: #4ade80; color: #16a34a; }
+    .status-btn[data-val="A"] { border-color: #fca5a5; color: #ef4444; }
+    .status-btn[data-val="I"] { border-color: #fde68a; color: #f59e0b; }
+    .status-btn[data-val="S"] { border-color: #93c5fd; color: #3b82f6; }
+
+    /* Warna background saat tombol aktif */
+    .status-btn.active[data-val="H"] { background: #dcfce7; }
+    .status-btn.active[data-val="A"] { background: #fee2e2; }
+    .status-btn.active[data-val="I"] { background: #fef9c3; }
+    .status-btn.active[data-val="S"] { background: #dbeafe; }
+  </style>
+</head>
+<body>
+
+  {% include 'sidebar_user.html' %}
+
+  <div class="main-content">
+    <div class="welcome">📋 Absensi Siswa</div>
+
+    <!-- Filter Form -->
+    <form method="GET" action="{{ url_for('absensi.absen_page') }}" class="filter">
+      <select name="kelas">
+        <option value="">Pilih Kelas</option>
+        <option value="10" {% if selected_kelas == '10' %}selected{% endif %}>10</option>
+        <option value="11" {% if selected_kelas == '11' %}selected{% endif %}>11</option>
+        <option value="12" {% if selected_kelas == '12' %}selected{% endif %}>12</option>
+      </select>
+
+      <select name="jurusan">
+        <option value="">Pilih Jurusan</option>
+        {% for j in jurusan_list %}
+        <option value="{{ j }}" {% if selected_jurusan == j %}selected{% endif %}>{{ j }}</option>
+        {% endfor %}
+      </select>
+
+      <select name="mapel">
+        <option value="">Pilih Mata Pelajaran</option>
+        {% for m in mapel_list %}
+        <option value="{{ m.id }}" {% if selected_mapel == m.id|string %}selected{% endif %}>{{ m.nama_mapel }}</option>
+        {% endfor %}
+      </select>
+
+      <button type="submit">Tampilkan</button>
+
+      <!-- Tombol Cetak PDF -->
+      {% if selected_kelas or selected_jurusan or selected_mapel %}
+      <a href="{{ url_for('absensi.rekap_absensi_pdf', kelas=selected_kelas, jurusan=selected_jurusan, mapel=selected_mapel) }}" target="_blank">
+        <button type="button" class="btn-pdf">Cetak PDF</button>
+      </a>
+      {% endif %}
+    </form>
+
+    <!-- Absensi Table -->
+    <form method="POST" action="{{ url_for('absensi.submit_absen') }}">
+  <!-- Kirim mapel_id ke backend -->
+  <input type="hidden" name="mapel" value="{{ selected_mapel }}">
+
+  <table>
+    <thead>
+      <tr>
+        <th>No</th>
+        <th>Nama</th>
+        <th>Kelas</th>
+        <th>Jurusan</th>
+        <th>Mata Pelajaran</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in siswa|sort(attribute='nama') %}
+      <tr>
+        <td>{{ loop.index }}</td>
+        <td>{{ s.nama }}</td>
+        <td>{{ s.kelas }}</td>
+        <td>{{ s.jurusan }}</td>
+        <td>{{ s.mapel.nama_mapel }}</td>
+        <td>
+          <div class="status-wrap">
+            <div class="status-btn" data-val="H">H</div>
+            <div class="status-btn" data-val="A">A</div>
+            <div class="status-btn" data-val="I">I</div>
+            <div class="status-btn" data-val="S">S</div>
+            <input type="hidden" name="status_{{ s.id }}" class="status-input" value="H">
+          </div>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6">Tidak ada data siswa ditemukan.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <br>
+  <button type="submit">Simpan Absensi</button>
+</form>
+
+  </div>
+
+  <!-- Script untuk tombol status -->
+   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <script>
+
+     const urlParams = new URLSearchParams(window.location.search);
+  const sent = urlParams.get('sent');
+  const failed = urlParams.get('failed');
+
+  if (sent !== null && failed !== null) {
+    if (parseInt(sent) > 0 && parseInt(failed) === 0) {
+      Swal.fire({
+        icon: 'success',
+        title: 'Berhasil!',
+        text: `Absensi tersimpan dan ${sent} pesan WhatsApp berhasil dikirim ✅`,
+        confirmButtonColor: '#007bff'
+      });
+    } else if (parseInt(sent) > 0 && parseInt(failed) > 0) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Sebagian Terkirim!',
+        text: `${sent} pesan berhasil dikirim, ${failed} gagal dikirim.`,
+        confirmButtonColor: '#f59e0b'
+      });
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: 'Gagal Kirim!',
+        text: 'Absensi tersimpan tapi semua pesan WhatsApp gagal dikirim ❌',
+        confirmButtonColor: '#ef4444'
+      });
+    }
+  }
+
+   // Validasi sebelum submit absensi
+  const formAbsensi = document.querySelector('form[action="{{ url_for("absensi.submit_absen") }}"]');
+  if (formAbsensi) {
+    formAbsensi.addEventListener('submit', function (e) {
+      const kelas = document.querySelector('select[name="kelas"]').value.trim();
+      const jurusan = document.querySelector('select[name="jurusan"]').value.trim();
+      const mapel = document.querySelector('select[name="mapel"]').value.trim();
+
+      if (!kelas || !jurusan || !mapel) {
+        e.preventDefault();
+        Swal.fire({
+          icon: 'warning',
+          title: 'Data Belum Lengkap!',
+          text: 'Pastikan sudah memilih Kelas, Jurusan, dan Mata Pelajaran sebelum menyimpan absensi.',
+          confirmButtonColor: '#007bff'
+        });
+        return false;
+      }
+    });
+  }
+
+    document.querySelectorAll("tbody tr").forEach(tr => {
+      const wrap = tr.querySelector(".status-wrap");
+      if (!wrap) return;
+
+      const input = wrap.querySelector(".status-input");
+      const buttons = wrap.querySelectorAll(".status-btn");
+
+      input.value = 'H';
+      buttons[0].classList.add('active');
+
+      buttons.forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          e.preventDefault();
+          buttons.forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+          input.value = btn.dataset.val;
+
+          
+        });
+      });
+    });
+  </script>
+
+</body>
+</html>

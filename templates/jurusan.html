@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Data Jurusan - SMK Mulia Buana</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: #f5f7fb;
+      overflow-x: hidden;
+    }
+
+    /* === Main Content === */
+    .main-content {
+      margin-left: 260px; /* sesuai lebar sidebar kamu */
+      padding: 30px;
+      transition: all 0.35s ease;
+    }
+
+    /* Saat sidebar tertutup (misal sidebar pakai class .collapsed) */
+    .sidebar.collapsed ~ .main-content {
+      margin-left: 80px;
+    }
+
+    @media (max-width: 992px) {
+      .main-content {
+        margin-left: 0;
+        padding: 20px;
+      }
+    }
+
+    /* === Header / Title === */
+    .welcome {
+      background: linear-gradient(90deg, #007bff, #005dc1);
+      padding: 18px 25px;
+      border-radius: 12px;
+      color: #fff;
+      font-weight: 500;
+      margin-bottom: 25px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+    }
+
+    /* === Form Tambah Jurusan === */
+    form.tambah-jurusan {
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+      border-top: 4px solid #007bff;
+      transition: transform 0.2s ease;
+    }
+    form.tambah-jurusan:hover { transform: translateY(-2px); }
+
+    form.tambah-jurusan input {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      margin: 5px 5px 10px 0;
+      width: calc(100% - 20px);
+    }
+    form.tambah-jurusan button {
+      background: #007bff;
+      color: #fff;
+      padding: 10px 22px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: 0.2s;
+    }
+    form.tambah-jurusan button:hover {
+      background: #005dc1;
+      transform: scale(1.03);
+    }
+
+    /* === Tabel Data === */
+    .table-wrapper {
+      overflow-x: auto;
+      border-radius: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #ddd;
+      text-align: center;
+      font-size: 15px;
+    }
+    th { background: #007bff; color: white; }
+    tr:hover td { background: #f0f6ff; }
+
+    /* === Tombol Aksi === */
+    .aksi-container {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .btn-aksi {
+      padding: 7px 14px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      color: white;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      text-decoration: none;
+      transition: 0.25s;
+    }
+    .edit-btn { background: #28a745; }
+    .hapus-btn { background: #dc3545; }
+    .edit-btn:hover { background: #218838; transform: scale(1.03); }
+    .hapus-btn:hover { background: #c82333; transform: scale(1.03); }
+
+    /* === Modal === */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+    .modal-content {
+      background: #fff;
+      width: 90%;
+      max-width: 400px;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      animation: fadeIn 0.3s ease;
+    }
+    .modal input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .btn-close { background: #6c757d; }
+    .btn-save { background: #007bff; color: white; }
+    .btn-save:hover { background: #005dc1; }
+    .btn-close:hover { background: #5a6268; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    @media (max-width: 600px) {
+      th, td { font-size: 13px; padding: 8px; }
+      .btn-aksi { font-size: 13px; padding: 6px 10px; }
+    }
+  </style>
+</head>
+<body>
+
+  {% include 'sidebar_user.html' %}
+
+  <div class="main-content">
+    <div class="welcome">🎓 Data Jurusan</div>
+
+    <form class="tambah-jurusan" method="POST" action="{{ url_for('jurusan.list_jurusan') }}">
+      <h3 style="color:#007bff; margin-top:0;">Tambah Jurusan</h3>
+      <input type="text" name="nama_jurusan" placeholder="Nama Jurusan" required>
+      <button type="submit" name="tambah">Tambah</button>
+    </form>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>Nama Jurusan</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for j in jurusan %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ j.nama_jurusan }}</td>
+            <td>
+              <div class="aksi-container">
+                <button class="btn-aksi edit-btn" onclick="openEditModal('{{ j.id }}','{{ j.nama_jurusan }}')">✏️ Edit</button>
+                <button class="btn-aksi hapus-btn" onclick="openDeleteModal('{{ j.id }}','{{ j.nama_jurusan }}')">🗑️ Hapus</button>
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="3">Belum ada jurusan.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- MODAL EDIT -->
+  <div class="modal" id="editModal">
+    <div class="modal-content">
+      <h3>Edit Jurusan</h3>
+      <form id="editForm" method="POST" action="{{ url_for('jurusan.edit_jurusan') }}">
+        <input type="hidden" id="edit-id" name="id">
+        <input type="text" id="edit-nama" name="nama_jurusan" required>
+        <div class="modal-actions">
+          <button type="button" class="btn-aksi btn-close" onclick="closeEditModal()">Tutup</button>
+          <button type="submit" class="btn-aksi btn-save" name="edit">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL HAPUS -->
+  <div class="modal" id="deleteModal">
+    <div class="modal-content">
+      <h3>Yakin ingin menghapus jurusan <span id="delete-name"></span>?</h3>
+      <form id="deleteForm" method="POST" action="{{ url_for('jurusan.delete_jurusan') }}">
+        <input type="hidden" id="delete-id" name="id">
+        <div class="modal-actions">
+          <button type="button" class="btn-aksi btn-close" onclick="closeDeleteModal()">Batal</button>
+          <button type="submit" class="btn-aksi hapus-btn">Hapus</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function openEditModal(id, nama) {
+      document.getElementById("edit-id").value = id;
+      document.getElementById("edit-nama").value = nama;
+      document.getElementById("editModal").style.display = "flex";
+    }
+    function closeEditModal() {
+      document.getElementById("editModal").style.display = "none";
+    }
+    function openDeleteModal(id, nama) {
+      document.getElementById("delete-id").value = id;
+      document.getElementById("delete-name").innerText = nama;
+      document.getElementById("deleteModal").style.display = "flex";
+    }
+    function closeDeleteModal() {
+      document.getElementById("deleteModal").style.display = "none";
+    }
+  </script>
+
+</body>
+</html>

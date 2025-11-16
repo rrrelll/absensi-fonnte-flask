@@ -1,0 +1,272 @@
+<!-- LUCIDE ICONS -->
+<script src="https://unpkg.com/lucide@latest"></script>
+
+<style>
+  .sidebar {
+    width: 250px;
+    background: #ffffff;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+    transition: all 0.35s ease;
+    display: flex;
+    flex-direction: column;
+    z-index: 1000;
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .sidebar.collapsed {
+    width: 80px;
+  }
+
+  .sidebar .logo {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 20px;
+    background: #007bff;
+    border-bottom: 3px solid #ffca28;
+    position: relative;
+  }
+
+  .sidebar .logo img {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    transition: 0.3s ease;
+  }
+
+  .sidebar .logo span {
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    transition: opacity 0.3s ease;
+  }
+
+  .sidebar.collapsed .logo span {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* ✅ Tombol kuning toggle */
+  .toggle-btn {
+    background: #ffca28;
+    color: #222;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    position: absolute;
+    right: -16px;
+    top: 20px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.2);
+  }
+
+  .toggle-btn:hover {
+    transform: rotate(90deg);
+  }
+
+  .menu-wrapper {
+    flex-grow: 1;
+    overflow-y: auto;
+    overflow-x: hidden; /* hilangkan scrollbar bawah */
+    padding: 15px 0;
+  }
+
+  .menu-section-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: #888;
+    letter-spacing: 0.5px;
+    padding: 10px 22px 6px;
+    transition: opacity 0.3s ease;
+  }
+
+  .sidebar.collapsed .menu-section-title {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .sidebar ul li {
+    margin-bottom: 5px;
+  }
+
+  .sidebar ul li a {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 22px;
+    color: #333;
+    text-decoration: none;
+    border-radius: 10px;
+    font-weight: 500;
+    position: relative;
+    transition: all 0.25s ease, background 0.3s ease, transform 0.25s ease;
+  }
+
+  .sidebar ul li a svg {
+    width: 20px;
+    height: 20px;
+    stroke: #007bff;
+    transition: stroke 0.3s ease;
+  }
+
+  .sidebar ul li a:hover {
+    background: rgba(0, 123, 255, 0.08);
+    transform: translateX(5px);
+  }
+
+  .sidebar ul li a:hover svg {
+    stroke: #007bff;
+  }
+
+  .sidebar ul li a.active {
+    background: rgba(0, 123, 255, 0.15);
+    color: #007bff;
+    font-weight: 600;
+    transform: translateX(4px);
+  }
+
+  .sidebar ul li a.active svg {
+    stroke: #007bff;
+  }
+
+  .sidebar.collapsed ul li a span,
+  .sidebar.collapsed .menu-section-title {
+    display: none;
+  }
+
+  /* Tooltip styling */
+  .sidebar ul li a::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: 100%;
+    margin-left: 12px;
+    background: #222;
+    color: #fff;
+    font-size: 12px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+    opacity: 0;
+    transform: translateY(-50%);
+    top: 50%;
+    pointer-events: none;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  }
+
+  .sidebar.collapsed ul li a:hover::after {
+    opacity: 1;
+  }
+
+  .sidebar-footer {
+    flex-shrink: 0;
+    text-align: center;
+    padding: 15px;
+    font-size: 12px;
+    color: #666;
+    border-top: 1px solid #eee;
+    background: #f9fbff;
+  }
+</style>
+
+<div class="sidebar" id="sidebar">
+  <div class="logo">
+    <a href="{{ url_for('dasbor.dasbor_index') }}" style="display:flex;align-items:center;gap:10px;text-decoration:none;">
+      <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo">
+      <span>MULIA BUANA</span>
+    </a>
+    <div class="toggle-btn" id="toggleSidebar">
+      <i data-lucide="align-left"></i>
+    </div>
+  </div>
+
+  <div class="menu-wrapper">
+    <!-- Navigasi -->
+    <p class="menu-section-title">Navigasi</p>
+    <ul>
+      <li>
+        <a href="{{ url_for('dasbor.dasbor_index') }}" data-tooltip="Dashboard"
+          class="{% if request.endpoint == 'dasbor.dasbor_index' %}active{% endif %}">
+          <i data-lucide="home"></i><span>Dashboard</span>
+        </a>
+      </li>
+      <li>
+        <a href="{{ url_for('absensi.absen_page') }}" data-tooltip="Absensi"
+          class="{% if request.endpoint == 'absensi.absen_page' %}active{% endif %}">
+          <i data-lucide="clipboard-check"></i><span>Absensi</span>
+        </a>
+      </li>
+    </ul>
+
+    <!-- Master Data -->
+    <p class="menu-section-title">Master Data</p>
+    <ul>
+      <li>
+        <a href="{{ url_for('siswa.list_siswa') }}" data-tooltip="Data Siswa"
+          class="{% if request.endpoint == 'siswa.list_siswa' %}active{% endif %}">
+          <i data-lucide="users"></i><span>Data Siswa</span>
+        </a>
+      </li>
+      <li>
+        <a href="{{ url_for('guru.list_guru') }}" data-tooltip="Data Guru"
+          class="{% if request.endpoint == 'guru.list_guru' %}active{% endif %}">
+          <i data-lucide="user"></i><span>Data Guru</span>
+        </a>
+      </li>
+      <li>
+        <a href="{{ url_for('jurusan.list_jurusan') }}" data-tooltip="Jurusan"
+          class="{% if request.endpoint == 'jurusan.list_jurusan' %}active{% endif %}">
+          <i data-lucide="layers"></i><span>Jurusan</span>
+        </a>
+      </li>
+      <li>
+        <a href="{{ url_for('mapel.list_mapel') }}" data-tooltip="Mata Pelajaran"
+          class="{% if request.endpoint == 'mapel.list_mapel' %}active{% endif %}">
+          <i data-lucide="book"></i><span>Mata Pelajaran</span>
+        </a>
+      </li>
+    </ul>
+
+    <!-- Akun -->
+    <p class="menu-section-title">Akun</p>
+    <ul>
+      <li>
+        <a href="{{ url_for('auth.logout') }}" data-tooltip="Logout">
+          <i data-lucide="log-out"></i><span>Logout</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <div class="sidebar-footer">
+    © 2025 SMK Mulia Buana
+  </div>
+</div>
+
+<script>
+  const sidebar = document.getElementById("sidebar");
+  const toggleBtn = document.getElementById("toggleSidebar");
+
+  toggleBtn.addEventListener("click", () => {
+    sidebar.classList.toggle("collapsed");
+    lucide.createIcons();
+  });
+
+  lucide.createIcons();
+</script>

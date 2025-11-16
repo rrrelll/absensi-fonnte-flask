@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presensi Siswa - SMK Mulia Buana</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        /* Custom scrollbar for table on mobile */
+        .table-scroll {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .status-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <div id="app" class="p-4 md:p-8">
+        <!-- Header -->
+        <header class="mb-8 text-center md:text-left">
+            <h1 class="text-3xl font-extrabold text-blue-800">Sistem Presensi Digital</h1>
+            <p class="text-gray-500">SMK Mulia Buana | Halaman Guru/Admin</p>
+        </header>
+
+        <!-- Main Content Card -->
+        <div class="bg-white rounded-xl shadow-2xl overflow-hidden max-w-4xl mx-auto">
+            
+            <!-- Navigation Tabs -->
+            <div class="flex border-b border-gray-200">
+                <button id="tab-presensi" onclick="showView('presensi')" class="flex-1 py-3 px-4 text-sm font-medium border-r transition duration-150 ease-in-out border-blue-600 bg-blue-600 text-white focus:outline-none">
+                    1. Input Presensi & Validasi
+                </button>
+                <button id="tab-notifikasi" onclick="showView('notifikasi')" class="flex-1 py-3 px-4 text-sm font-medium text-gray-600 transition duration-150 ease-in-out hover:bg-gray-50 focus:outline-none">
+                    2. Trigger Notifikasi WA & Tindak Lanjut
+                </button>
+            </div>
+
+            <!-- VIEW 1: Input Presensi -->
+            <div id="view-presensi" class="p-6 md:p-8">
+                <h2 class="text-xl font-bold mb-4 text-gray-700">Presensi Kelas X RPL 1</h2>
+                
+                <!-- Date and Class Selector (Mockup) -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 bg-blue-50 p-3 rounded-lg border border-blue-200">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Tanggal Presensi</label>
+                        <input type="date" value="2025-11-01" class="w-full p-2 border border-blue-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Pilih Kelas</label>
+                        <select class="w-full p-2 border border-blue-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500">
+                            <option>X RPL 1</option>
+                            <option>XI TKJ 2</option>
+                            <option>XII AKL 3</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Presensi Table -->
+                <div class="table-scroll">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/12">No.</th>
+                                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-4/12">Nama Siswa / NIS</th>
+                                <th colspan="4" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-7/12">Status Kehadiran</th>
+                            </tr>
+                        </thead>
+                        <tbody id="presensi-body" class="bg-white divide-y divide-gray-200 text-sm">
+                            <!-- Data Siswa akan di-inject oleh JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="mt-8">
+                    <button onclick="simulateSaveAndSwitch()" class="w-full py-3 px-4 border border-transparent rounded-lg shadow-lg text-lg font-semibold text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 transition duration-150 ease-in-out status-button">
+                        Simpan Presensi Harian
+                    </button>
+                    <p id="save-message" class="mt-4 text-center text-green-600 font-medium hidden">Presensi berhasil disimpan!</p>
+                </div>
+            </div>
+
+            <!-- VIEW 2: Trigger Notifikasi WA -->
+            <div id="view-notifikasi" class="p-6 md:p-8 hidden">
+                <h2 class="text-xl font-bold mb-6 text-gray-700">Verifikasi & Tindak Lanjut Absen</h2>
+                
+                <div id="rekap-absen">
+                    <!-- Daftar detail siswa Absen akan muncul di sini -->
+                    <p class="text-gray-500 text-center py-8">Rekapitulasi siswa yang **ABSen** akan muncul di sini setelah presensi disimpan.</p>
+                </div>
+                
+                <div class="mt-8 pt-6 border-t border-gray-200">
+                    <p class="text-base mb-4 text-red-600 font-semibold flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        </svg>
+                        Langkah Pertama: Kirim Notifikasi Awal (Massal)
+                    </p>
+                    <button onclick="simulateWAPush()" id="wa-trigger-button" class="w-full py-4 px-4 border border-transparent rounded-lg shadow-xl text-xl font-bold text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-4 focus:ring-red-500 focus:ring-opacity-50 transition duration-150 ease-in-out status-button disabled:bg-gray-400 disabled:shadow-none">
+                        Kirim Notifikasi WA ke [0] Orang Tua
+                    </button>
+                    <p class="text-xs text-gray-500 mt-2 text-center">Menggunakan Celery (Python) untuk pengiriman asinkron.</p>
+                    <p id="wa-status-message" class="mt-4 text-center text-sm font-medium hidden"></p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURATION & DUMMY DATA ---
+        const apiKey = ""; 
+        
+        // Nomor WA Admin/Guru (digunakan dalam template pesan sebagai kontak konfirmasi)
+        const ADMIN_WA_NUMBER_DISPLAY = '085213569436'; 
+
+        // Data Dummy Siswa
+        const students = [
+            { id: 1, nis: '2022001', nama: 'Agus Setiawan', wa_ortu: '6281211112222', total_absences: 0, kelas: 'X RPL 1', hobi: 'Gaming, Editing Video' },
+            // Nomor WA Ortu Tafarel Akbar diupdate
+            { id: 2, nis: '2022002', nama: 'Tafarel Akbar', wa_ortu: '628881199868', total_absences: 4, kelas: 'X RPL 1', hobi: 'Desain Grafis, Musik EDM' }, 
+            { id: 3, nis: '2022003', nama: 'Citra Dewi', wa_ortu: '6285733334444', total_absences: 1, kelas: 'X RPL 1', hobi: 'Membaca Novel' },
+            { id: 4, nis: '2022004', nama: 'Dewi Sartika', wa_ortu: '6287898765432', total_absences: 0, kelas: 'X RPL 1', hobi: 'Volly, TikTok' },
+            { id: 5, nis: '2022005', nama: 'Eko Prasetyo', wa_ortu: '6282155556666', total_absences: 2, kelas: 'X RPL 1', hobi: 'Badminton' },
+        ];
+        
+        let currentAbsenceList = [];
+        
+        // --- UI & STATE FUNCTIONS ---
+
+        function showView(viewId) {
+            document.getElementById('view-presensi').classList.add('hidden');
+            document.getElementById('view-notifikasi').classList.add('hidden');
+
+            document.getElementById('tab-presensi').classList.remove('bg-blue-600', 'text-white', 'border-blue-600');
+            document.getElementById('tab-presensi').classList.add('text-gray-600', 'hover:bg-gray-50');
+            document.getElementById('tab-notifikasi').classList.remove('bg-blue-600', 'text-white', 'border-blue-600');
+            document.getElementById('tab-notifikasi').classList.add('text-gray-600', 'hover:bg-gray-50');
+
+            document.getElementById(`view-${viewId}`).classList.remove('hidden');
+            document.getElementById(`tab-${viewId}`).classList.add('bg-blue-600', 'text-white', 'border-blue-600');
+            document.getElementById(`tab-${viewId}`).classList.remove('text-gray-600', 'hover:bg-gray-50');
+        }
+
+        function getStatusClasses(status, isSelected) {
+            if (status === 'Hadir') return isSelected ? 'bg-green-100 text-green-700 ring-2 ring-green-500' : 'bg-green-50 text-green-500 hover:bg-green-100';
+            if (status === 'Absen') return isSelected ? 'bg-red-100 text-red-700 ring-2 ring-red-500' : 'bg-red-50 text-red-500 hover:bg-red-100';
+            if (status === 'Izin') return isSelected ? 'bg-yellow-100 text-yellow-700 ring-2 ring-yellow-500' : 'bg-yellow-50 text-yellow-500 hover:bg-yellow-100';
+            if (status === 'Sakit') return isSelected ? 'bg-indigo-100 text-indigo-700 ring-2 ring-indigo-500' : 'bg-indigo-50 text-indigo-500 hover:bg-indigo-100';
+            return '';
+        }
+
+        function selectStatus(button) {
+            const studentId = button.getAttribute('data-id');
+            const newStatus = button.getAttribute('data-status');
+            
+            document.querySelectorAll(`[data-id="${studentId}"].selected-status`).forEach(btn => {
+                const oldStatus = btn.getAttribute('data-status');
+                btn.classList.remove('selected-status', 'ring-2', `ring-${oldStatus.toLowerCase()}-500`);
+                btn.className = btn.className.replace(/bg-([a-z]+)-100 text-([a-z]+)-700/g, `bg-${oldStatus.toLowerCase()}-50 text-${oldStatus.toLowerCase()}-500 hover:bg-${oldStatus.toLowerCase()}-100`);
+            });
+
+            button.classList.add('selected-status', 'ring-2');
+            button.className = button.className.replace(/bg-([a-z]+)-50 text-([a-z]+)-500 hover:bg-([a-z]+)-100/g, `bg-${newStatus.toLowerCase()}-100 text-${newStatus.toLowerCase()}-700`);
+            button.classList.add(`ring-${newStatus.toLowerCase()}-500`);
+        }
+        
+        function renderPresensiTable() {
+            const tbody = document.getElementById('presensi-body');
+            tbody.innerHTML = '';
+            students.forEach((s, index) => {
+                // Set default status for demo purposes
+                // Tafarel Akbar (id: 2) dan Dewi Sartika (id: 4) default Absen
+                const defaultStatus = (s.id === 2 || s.id === 4) ? 'Absen' : (s.id === 5 ? 'Izin' : 'Hadir'); 
+                
+                const row = `
+                    <tr class="hover:bg-gray-50 transition duration-100 ease-in-out">
+                        <td class="px-3 py-3 whitespace-nowrap text-gray-900">${index + 1}</td>
+                        <td class="px-3 py-3 whitespace-nowrap">
+                            <div class="font-semibold">${s.nama}</div>
+                            <div class="text-xs text-gray-500">NIS: ${s.nis} | Total Absen: ${s.total_absences}</div>
+                        </td>
+                        ${['Hadir', 'Absen', 'Izin', 'Sakit'].map(status => `
+                            <td class="px-1 py-3 whitespace-nowrap text-center">
+                                <button data-status="${status}" data-id="${s.id}" 
+                                    class="status-button px-2 py-1 text-xs font-semibold rounded-full w-full
+                                    ${defaultStatus === status ? 'selected-status ' : ''}
+                                    ${getStatusClasses(status, defaultStatus === status)}"
+                                    onclick="selectStatus(this)">
+                                    ${status.charAt(0)}
+                                </button>
+                            </td>
+                        `).join('')}
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+        
+        /**
+         * Menginisiasi pengiriman pesan WA individual menggunakan tautan wa.me
+         * Ini akan membuka tab baru dengan aplikasi WA yang sudah terisi pesannya.
+         * @param {number} studentId - ID Siswa yang akan dikirimi notifikasi.
+         */
+        function simulateWAPushIndividual(studentId) {
+            const student = students.find(s => s.id === studentId);
+            if (!student) return;
+
+            // 1. Ambil Tanggal Hari Ini
+            const today = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            
+            // 2. Draft Pesan Template (URL encoded)
+            // Template diupdate untuk menyertakan nomor WA admin/guru
+            const template = `Yth. Bapak/Ibu Wali Murid ${student.nama},\n\nKami dari SMK Mulia Buana memberitahukan bahwa ananda *${student.nama}* tidak hadir (ABSen tanpa keterangan) di sekolah pada hari ini, *${today}*.\n\nUntuk konfirmasi, silakan hubungi Wali Kelas/Admin di nomor ini: *${ADMIN_WA_NUMBER_DISPLAY}* (WA only).\n(Pesan ini dikirim otomatis oleh Sistem Presensi)`;
+            
+            const encodedMessage = encodeURIComponent(template);
+            
+            // 3. Buat Tautan WA (Format: 628xxxx)
+            const waLink = `https://wa.me/${student.wa_ortu}?text=${encodedMessage}`;
+            
+            // 4. Buka Tautan di tab baru
+            window.open(waLink, '_blank');
+
+            // 5. Update UI Status
+            const statusMessage = document.getElementById('wa-status-message');
+            statusMessage.classList.remove('hidden', 'text-green-600', 'text-red-600');
+            statusMessage.classList.add('text-blue-600');
+            statusMessage.textContent = `Pesan WA untuk ${student.nama} dibuka di tab baru. Harap kirim pesan secara manual.`;
+            
+            setTimeout(() => {
+                statusMessage.classList.add('hidden');
+            }, 3000);
+        }
+
+        function renderAbsenceList() {
+            const container = document.getElementById('rekap-absen');
+            const button = document.getElementById('wa-trigger-button');
+            
+            button.innerHTML = `Kirim Notifikasi WA ke [${currentAbsenceList.length}] Orang Tua`;
+            button.disabled = currentAbsenceList.length === 0;
+            
+            if (currentAbsenceList.length === 0) {
+                container.innerHTML = `
+                    <div class="p-6 bg-green-50 text-center rounded-lg border border-green-200">
+                        <p class="text-green-700 font-semibold text-lg">Semua siswa Hadir atau memiliki keterangan (Izin/Sakit) hari ini.</p>
+                        <p class="text-green-600 text-sm mt-1">Tidak ada notifikasi WA yang perlu dikirim.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // RESTORE Detailed List
+            let listHtml = `<p class="text-xl font-bold text-red-700 mb-4">Daftar Siswa Status ABSEN (${currentAbsenceList.length} orang)</p>`;
+            
+            currentAbsenceList.forEach((s, index) => {
+                const isRepeatOffender = s.total_absences > 2;
+                listHtml += `
+                    <div class="p-3 mb-3 rounded-lg flex items-center justify-between gap-4 ${isRepeatOffender ? 'bg-red-50 border-l-4 border-red-500' : 'bg-gray-50 border-l-4 border-gray-400'} shadow-sm">
+                        <div class="flex-1 min-w-0">
+                            <p class="font-bold text-gray-900 truncate">${index + 1}. ${s.nama}</p>
+                            <p class="text-xs text-gray-600">NIS: ${s.nis} | Total Absen: ${s.total_absences + 1} kali (termasuk hari ini)</p>
+                            ${isRepeatOffender ? '<span class="text-xs font-bold text-red-600 bg-red-200 px-2 py-0.5 rounded-full mt-1 inline-block">⚠️ Pelanggar Berulang</span>' : ''}
+                        </div>
+                        <!-- Perubahan di sini: Menggunakan student.id untuk memanggil fungsi -->
+                        <button onclick="simulateWAPushIndividual(${s.id})" class="flex-shrink-0 py-1 px-3 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition status-button">
+                            WA Ortu
+                        </button>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = listHtml;
+        }
+
+        // --- ABSENCE HANDLING & SIMULATION ---
+        
+        function simulateSaveAndSwitch() {
+            document.getElementById('save-message').classList.remove('hidden');
+            
+            currentAbsenceList = students.filter(s => {
+                const selectedButton = document.querySelector(`[data-id="${s.id}"].selected-status`);
+                return selectedButton && selectedButton.getAttribute('data-status') === 'Absen';
+            });
+            
+            renderAbsenceList();
+            
+            setTimeout(() => {
+                showView('notifikasi');
+                document.getElementById('save-message').classList.add('hidden');
+                document.getElementById('wa-status-message').classList.add('hidden');
+            }, 1000); 
+        }
+
+        async function simulateWAPush() {
+            const statusMessage = document.getElementById('wa-status-message');
+            const button = document.getElementById('wa-trigger-button');
+            
+            if (currentAbsenceList.length === 0) return;
+
+            button.disabled = true;
+            button.innerHTML = 'Memproses Pengiriman... (Sedang menjalankan Celery Task...)';
+            statusMessage.classList.remove('hidden', 'text-green-600', 'text-red-600');
+            statusMessage.classList.add('text-blue-600');
+            statusMessage.textContent = `Memulai pengiriman untuk ${currentAbsenceList.length} pesan...`;
+
+            await new Promise(resolve => setTimeout(resolve, 1500)); 
+            
+            button.innerHTML = 'Notifikasi Selesai Dikirim!';
+            button.classList.remove('bg-red-600', 'hover:bg-red-700');
+            button.classList.add('bg-gray-500');
+            
+            statusMessage.classList.remove('text-blue-600');
+            statusMessage.classList.add('text-green-600');
+            statusMessage.textContent = `✅ ${currentAbsenceList.length} notifikasi WA berhasil dikirim (log tersimpan di model PesanWA).`;
+        }
+        
+        // Inisialisasi: Tampilkan Presensi View pertama kali
+        window.onload = function() {
+            renderPresensiTable();
+            
+            document.querySelector('[data-id="2"][data-status="Absen"]').click();
+            document.querySelector('[data-id="4"][data-status="Absen"]').click();
+            
+            
+            document.querySelector('[data-id="5"][data-status="Izin"]').click();
+            
+            
+            simulateSaveAndSwitch(); 
+            showView('presensi'); // Start back on View 1
+        };
+
+    </script>
+</body>
+</html>

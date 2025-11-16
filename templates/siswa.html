@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Siswa - SMK Mulia Buana</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: #f5f7fb;
+    }
+
+    .main-content {
+      margin-left: 250px;
+      padding: 30px;
+      transition: margin-left 0.35s ease;
+    }
+
+    .sidebar.collapsed ~ .main-content {
+      margin-left: 80px;
+    }
+
+    .welcome {
+      background: linear-gradient(90deg, #007bff, #005dc1);
+      padding: 18px 25px;
+      border-radius: 12px;
+      color: #fff;
+      font-weight: 500;
+      margin-bottom: 25px;
+    }
+
+    /* FORM TAMBAH SISWA SATU BARIS */
+    form.tambah-siswa {
+      background: white;
+      padding: 15px 20px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      border-top: 4px solid #007bff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: nowrap;
+    }
+    form.tambah-siswa h3 { display: none; }
+    form.tambah-siswa input,
+    form.tambah-siswa select {
+      padding: 8px 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      flex: 1 1 120px;
+      min-width: 100px;
+    }
+    form.tambah-siswa input[name="no_ortu"] { flex: 0 0 120px; }
+    form.tambah-siswa button {
+      background: #007bff;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+    form.tambah-siswa button:hover { background: #005dc1; }
+
+    /* TABEL */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    th, td { padding: 12px; border-bottom: 1px solid #ddd; text-align: center; }
+    th { background: #007bff; color: white; }
+
+    .aksi-container { display: flex; justify-content: center; gap: 8px; }
+    .btn-aksi {
+      padding: 7px 14px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      color: white;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      text-decoration: none;
+    }
+    .edit-btn { background: #28a745; }
+    .hapus-btn { background: #dc3545; }
+
+    /* MODAL */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background: white;
+      width: 420px;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    .modal input, .modal select {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
+    .btn-close { background: #6c757d; color: white; padding: 8px 16px; border-radius: 6px; cursor: pointer; border: none; }
+    .btn-save { background: #007bff; color: white; padding: 8px 16px; border-radius: 6px; cursor: pointer; border: none; }
+  </style>
+</head>
+<body>
+
+  {% include 'sidebar_user.html' %}
+
+  <div class="main-content">
+    <div class="welcome">🎓 Data Siswa</div>
+
+    <!-- FORM TAMBAH SISWA SATU BARIS -->
+    <form class="tambah-siswa" method="POST" action="{{ url_for('siswa.add_siswa') }}">
+      <input type="text" name="nama" placeholder="Nama Siswa" required>
+      <input type="text" name="nisn" placeholder="NISN" required>
+      <select name="kelas" required>
+        <option value="">Kelas</option>
+        <option value="10">10</option>
+        <option value="11">11</option>
+        <option value="12">12</option>
+      </select>
+      <select name="jurusan" required>
+        <option value="">Jurusan</option>
+        {% for j in jurusan_list %}
+        <option value="{{ j.nama_jurusan }}">{{ j.nama_jurusan }}</option>
+        {% endfor %}
+      </select>
+      <select name="mapel" required>
+        <option value="">Mata Pelajaran</option>
+        {% for m in mapel_list %}
+        <option value="{{ m.id }}">{{ m.nama_mapel }}</option>
+        {% endfor %}
+      </select>
+      <input type="text" name="nama_ortu" placeholder="Nama Orang Tua" required>
+      <input type="text" name="no_ortu" placeholder="No. HP Orang Tua" required>
+      <button type="submit">Tambah</button>
+    </form>
+
+    <!-- TABEL SISWA -->
+    <table>
+      <thead>
+        <tr>
+          <th>No</th>
+          <th>Nama</th>
+          <th>NISN</th>
+          <th>Kelas</th>
+          <th>Jurusan</th>
+          <th>Mata Pelajaran</th>
+          <th>Orang Tua</th>
+          <th>No Ortu</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in siswa|sort(attribute='nama') %}
+        <tr>
+          <td>{{ loop.index }}</td>
+          <td>{{ s.nama }}</td>
+          <td>{{ s.nisn }}</td>
+          <td>{{ s.kelas }}</td>
+          <td>{{ s.jurusan }}</td>
+          <td>{{ s.mapel.nama_mapel }}</td>
+          <td>{{ s.nama_ortu }}</td>
+          <td>{{ s.no_ortu }}</td>
+          <td>
+            <div class="aksi-container">
+              <button class="btn-aksi edit-btn"
+                onclick="openEditModal('{{ s.id }}','{{ s.nama }}','{{ s.nisn }}','{{ s.kelas }}','{{ s.jurusan }}','{{ s.mapel.id }}','{{ s.nama_ortu }}','{{ s.no_ortu }}')">
+                ✏️ Edit
+              </button>
+              <button class="btn-aksi hapus-btn" onclick="openDeleteModal('{{ s.id }}')">
+                🗑️ Hapus
+              </button>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="9">Belum ada data siswa.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- MODAL EDIT -->
+  <div class="modal" id="editModal">
+    <div class="modal-content">
+      <h3>Edit Data Siswa</h3>
+      <form id="editForm" method="POST">
+        <input type="text" id="edit-nama" name="nama" required>
+        <input type="text" id="edit-nisn" name="nisn" required>
+        <select id="edit-kelas" name="kelas" required>
+          <option value="10">10</option>
+          <option value="11">11</option>
+          <option value="12">12</option>
+        </select>
+        <select id="edit-jurusan" name="jurusan" required>
+          {% for j in jurusan_list %}
+          <option value="{{ j.nama_jurusan }}">{{ j.nama_jurusan }}</option>
+          {% endfor %}
+        </select>
+        <select id="edit-mapel" name="mapel" required>
+          {% for m in mapel_list %}
+          <option value="{{ m.id }}">{{ m.nama_mapel }}</option>
+          {% endfor %}
+        </select>
+        <input type="text" id="edit-nama_ortu" name="nama_ortu" required>
+        <input type="text" id="edit-no_ortu" name="no_ortu" required>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-aksi btn-close" onclick="closeEditModal()">Tutup</button>
+          <button type="submit" class="btn-aksi btn-save">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL HAPUS -->
+  <div class="modal" id="deleteModal">
+    <div class="modal-content">
+      <h3>Yakin ingin menghapus siswa ini?</h3>
+      <form action="/siswa/delete" method="POST">
+        <input type="hidden" id="delete-id" name="id">
+        <div class="modal-actions">
+          <button type="button" class="btn-aksi btn-close" onclick="closeDeleteModal()">Batal</button>
+          <button type="submit" class="btn-aksi hapus-btn">Hapus</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // === MODAL EDIT ===
+    function openEditModal(id, nama, nisn, kelas, jurusan, mapel_id, nama_ortu, no_ortu) {
+      document.getElementById("editForm").action = `/siswa/edit/${id}`;
+      document.getElementById("edit-nama").value = nama;
+      document.getElementById("edit-nisn").value = nisn;
+      document.getElementById("edit-kelas").value = kelas;
+      document.getElementById("edit-jurusan").value = jurusan;
+      document.getElementById("edit-mapel").value = mapel_id;
+      document.getElementById("edit-nama_ortu").value = nama_ortu;
+      document.getElementById("edit-no_ortu").value = no_ortu;
+      document.getElementById("editModal").style.display = "flex";
+    }
+
+    function closeEditModal() {
+      document.getElementById("editModal").style.display = "none";
+    }
+
+    // === MODAL HAPUS ===
+    function openDeleteModal(id) {
+      document.getElementById("delete-id").value = id;
+      document.getElementById("deleteModal").style.display = "flex";
+    }
+
+    function closeDeleteModal() {
+      document.getElementById("deleteModal").style.display = "none";
+    }
+  </script>
+
+</body>
+</html>

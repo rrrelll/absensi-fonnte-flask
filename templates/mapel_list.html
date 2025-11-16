@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Mata Pelajaran - SMK Mulia Buana</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      margin: 0; 
+      font-family: 'Poppins', sans-serif; 
+      background: #f5f7fb;
+    }
+     .main-content {
+      margin-left: 260px; /* sesuai lebar sidebar kamu */
+      padding: 30px;
+      transition: all 0.35s ease;
+    }
+
+    /* Saat sidebar tertutup (misal sidebar pakai class .collapsed) */
+    .sidebar.collapsed ~ .main-content {
+      margin-left: 80px;
+    }
+
+    @media (max-width: 992px) {
+      .main-content {
+        margin-left: 0;
+        padding: 20px;
+      }
+    }
+    .welcome {
+      background: linear-gradient(90deg, #007bff, #005dc1);
+      padding: 18px 25px; 
+      border-radius: 12px;
+      color: #fff; 
+      font-weight: 500; 
+      margin-bottom: 25px;
+    }
+
+    /* FORM TAMBAH */
+    form.tambah-mapel {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      border-top: 4px solid #007bff;
+    }
+    form.tambah-mapel input {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      margin: 5px 5px 10px 0;
+    }
+    form.tambah-mapel button {
+      background: #007bff;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    form.tambah-mapel button:hover {
+      background: #005dc1;
+    }
+
+    /* TABEL */
+    table {
+      width: 100%; 
+      border-collapse: collapse; 
+      background: white;
+      border-radius: 10px; 
+      overflow: hidden;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    th, td {
+      padding: 12px; 
+      border-bottom: 1px solid #ddd; 
+      text-align: center;
+    }
+    th {background: #007bff; color: white;}
+    .aksi-container {display: flex; justify-content: center; gap: 8px;}
+    .btn-aksi {
+      padding: 7px 14px; 
+      border: none; 
+      border-radius: 6px;
+      font-size: 14px; 
+      cursor: pointer; 
+      color: white;
+      display: inline-flex; 
+      align-items: center; 
+      gap: 5px;
+      text-decoration: none;
+    }
+    .edit-btn {background: #28a745;}
+    .hapus-btn {background: #dc3545;}
+
+    /* MODAL */
+    .modal {
+      display: none; 
+      position: fixed; 
+      top: 0; left: 0;
+      width: 100%; height: 100%; 
+      background: rgba(0,0,0,0.5);
+      justify-content: center; 
+      align-items: center;
+    }
+    .modal-content {
+      background: white; 
+      width: 400px; 
+      padding: 25px;
+      border-radius: 10px; 
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    .modal input {
+      width: 100%; 
+      padding: 10px; 
+      margin-bottom: 12px;
+      border: 1px solid #ccc; 
+      border-radius: 6px;
+    }
+    .modal-actions {
+      display: flex; 
+      justify-content: flex-end; 
+      gap: 10px;
+    }
+    .btn-close {background: #6c757d;}
+    .btn-save {background: #007bff; color:white;}
+    .btn-save:hover {background: #005dc1;}
+    .btn-close:hover {background: #5a6268;}
+  </style>
+</head>
+<body>
+
+  {% include 'sidebar_user.html' %}
+
+  <div class="main-content">
+    <div class="welcome">📚 Data Mata Pelajaran</div>
+
+    <!-- FORM TAMBAH -->
+    <form class="tambah-mapel" method="POST" action="{{ url_for('mapel.list_mapel') }}">
+      <h3 style="color:#007bff; margin-top:0;">Tambah Mata Pelajaran</h3>
+      <input type="text" name="nama_mapel" placeholder="Nama Mata Pelajaran" required>
+      <button type="submit" name="tambah">Tambah</button>
+    </form>
+
+    <!-- TABEL -->
+    <table>
+      <thead>
+        <tr>
+          <th>No</th>
+          <th>Nama Mata Pelajaran</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in mapel %}
+        <tr>
+          <td>{{ loop.index }}</td>
+          <td>{{ m.nama_mapel }}</td>
+          <td>
+            <div class="aksi-container">
+              <button class="btn-aksi edit-btn" 
+                onclick="openEditModal('{{ m.id }}','{{ m.nama_mapel }}')">✏️ Edit</button>
+              <button class="btn-aksi hapus-btn" 
+                onclick="openDeleteModal('{{ m.id }}','{{ m.nama_mapel }}')">🗑️ Hapus</button>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="3">Belum ada Mata Pelajaran.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- MODAL EDIT -->
+  <div class="modal" id="editModal">
+    <div class="modal-content">
+      <h3>Edit Mata Pelajaran</h3>
+      <form id="editForm" method="POST">
+        <input type="text" id="edit-nama" name="nama_mapel" required>
+        <div class="modal-actions">
+          <button type="button" class="btn-aksi btn-close" onclick="closeEditModal()">Tutup</button>
+          <button type="submit" class="btn-aksi btn-save" name="edit">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL HAPUS -->
+  <div class="modal" id="deleteModal">
+    <div class="modal-content">
+      <h3>Yakin ingin menghapus mata pelajaran <span id="delete-name"></span>?</h3>
+      <form id="deleteForm" method="POST">
+        <div class="modal-actions">
+          <button type="button" class="btn-aksi btn-close" onclick="closeDeleteModal()">Batal</button>
+          <button type="submit" class="btn-aksi hapus-btn">Hapus</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function openEditModal(id, nama) {
+      document.getElementById("editForm").action = `/mapel/edit/${id}`;
+      document.getElementById("edit-nama").value = nama;
+      document.getElementById("editModal").style.display = "flex";
+    }
+    function closeEditModal() {
+      document.getElementById("editModal").style.display = "none";
+    }
+
+    function openDeleteModal(id, nama) {
+      document.getElementById("deleteForm").action = `/mapel/hapus/${id}`;
+      document.getElementById("delete-name").innerText = nama;
+      document.getElementById("deleteModal").style.display = "flex";
+    }
+    function closeDeleteModal() {
+      document.getElementById("deleteModal").style.display = "none";
+    }
+  </script>
+
+</body>
+</html>

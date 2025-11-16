@@ -1,0 +1,11 @@
+Flask
+Flask-SQLAlchemy
+Flask-Login
+Flask-Bcrypt
+pymysql
+python-dotenv
+requests
+pytz
+SQLAlchemy
+reportlab
+gunicorn
