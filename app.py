@@ -19,17 +19,16 @@ MYSQLHOST = os.getenv("MYSQLHOST")
 MYSQLPORT = os.getenv("MYSQLPORT")
 MYSQLDATABASE = os.getenv("MYSQLDATABASE")
 
-if MYSQLUSER and MYSQLHOST:
-    # Mode DEPLOY (Railway)
-    app.config["SQLALCHEMY_DATABASE_URI"] = (
-        f"mysql+pymysql://{MYSQLUSER}:{MYSQLPASSWORD}"
-        f"@{MYSQLHOST}:{MYSQLPORT}/{MYSQLDATABASE}"
+# KONFIG DATABASE UNTUK RAILWAY & LOCAL
+DATABASE_URL = os.getenv("MYSQL_URL")  # <--- gunakan PRIVATE endpoint
+
+if DATABASE_URL:
+    app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL.replace(
+        "mysql://", "mysql+pymysql://"
     )
 else:
-    # Mode LOCAL (XAMPP)
-    app.config["SQLALCHEMY_DATABASE_URI"] = (
-        "mysql+pymysql://root:@localhost/smkmuliabuana"
-    )
+    app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:@localhost/smkmuliabuana"
+
 
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "supersecret")
