@@ -13,11 +13,11 @@ app = Flask(__name__)
 # =========================================================
 
 # Jika Railway menyediakan variabel env, pakai itu
-MYSQLUSER = os.getenv("MYSQLUSER")
-MYSQLPASSWORD = os.getenv("MYSQLPASSWORD")
-MYSQLHOST = os.getenv("MYSQLHOST")
-MYSQLPORT = os.getenv("MYSQLPORT")
-MYSQLDATABASE = os.getenv("MYSQLDATABASE")
+MYSQLUSER = os.getenv("root")
+MYSQLPASSWORD = os.getenv("RrhbInnXYcFmBpknRZXFlegdtWivOtuj")
+MYSQLHOST = os.getenv("mysql.railway.internal")
+MYSQLPORT = os.getenv("3306")
+MYSQLDATABASE = os.getenv("railway")
 
 if MYSQLUSER and MYSQLHOST:
     # Mode DEPLOY (Railway)
