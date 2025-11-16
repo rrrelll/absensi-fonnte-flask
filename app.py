@@ -12,23 +12,16 @@ app = Flask(__name__)
 # KONFIG DATABASE UNTUK RAILWAY & LOCAL
 # =========================================================
 
-# Jika Railway menyediakan variabel env, pakai itu
-MYSQLUSER = os.getenv("MYSQLUSER")
-MYSQLPASSWORD = os.getenv("MYSQLPASSWORD")
-MYSQLHOST = os.getenv("MYSQLHOST")
-MYSQLPORT = os.getenv("MYSQLPORT")
-MYSQLDATABASE = os.getenv("MYSQLDATABASE")
-
-# KONFIG DATABASE UNTUK RAILWAY & LOCAL
-DATABASE_URL = os.getenv("MYSQL_URL")  # <--- gunakan PRIVATE endpoint
+DATABASE_URL = os.getenv("MYSQL_URL")  # gunakan PRIVATE endpoint dari Railway
 
 if DATABASE_URL:
+    # Railway: ganti mysql:// -> mysql+pymysql://
     app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL.replace(
         "mysql://", "mysql+pymysql://"
     )
 else:
+    # Local development
     app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:@localhost/smkmuliabuana"
-
 
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "supersecret")
@@ -73,11 +66,4 @@ app.register_blueprint(mapel_bp)
 @app.route('/')
 def home():
     return redirect(url_for('auth.login'))
-
-# =========================================================
-# Jalankan untuk Lokal
-# =========================================================
-#if __name__ == '__main__':
- #   port = int(os.getenv("PORT", 5000))
-  #  app.run(host="0.0.0.0", port=port)
 
