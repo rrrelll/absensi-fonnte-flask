@@ -9,3 +9,5 @@ pytz
 SQLAlchemy
 reportlab
 gunicorn
+cryptography
+pymysql
