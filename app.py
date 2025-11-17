@@ -12,13 +12,14 @@ app = Flask(__name__)
 # KONFIG DATABASE UNTUK RAILWAY & LOCAL
 # =========================================================
 
-DATABASE_URL = os.getenv("MYSQL_PUBLIC_URL")  # gunakan PRIVATE endpoint dari Railway
+DATABASE_URL = os.getenv("MYSQLPUBLICURL") # gunakan PRIVATE endpoint dari Railway
 
 if DATABASE_URL:
     # Railway: ganti mysql:// -> mysql+pymysql://
     app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL.replace(
-        "mysql://", "mysql+pymysql://"
-    )
+    "mysql://", "mysql+pymysql://"
+)
+
 else:
     # Local development
     app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:@localhost/smkmuliabuana"
