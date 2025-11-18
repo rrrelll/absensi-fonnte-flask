@@ -12,10 +12,10 @@ app = Flask(__name__)
 # KONFIG DATABASE UNTUK RAILWAY & LOCAL
 # =========================================================
 
-DATABASE_URL = os.getenv("MYSQLPUBLICURL")
+DATABASE_URL = os.getenv("MYSQL_PUBLIC_URL")
 
 if not DATABASE_URL:
-    raise Exception("MYSQLPUBLICURL not found in environment variables")
+    raise Exception("MYSQL_PUBLIC_URL not found in environment variables")
 
 if DATABASE_URL:
     # Railway: ganti mysql:// -> mysql+pymysql://
