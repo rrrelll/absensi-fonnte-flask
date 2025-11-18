@@ -258,7 +258,7 @@ def rekap_absensi_pdf():
     header_style = ParagraphStyle('header', parent=styles['Heading1'], fontSize=16, alignment=1)
 
     # Kop surat
-    logo1, logo2 = "static/logo.png", "static/logo_pendidikan.png"
+    logo1, logo2 = "static/logo.webp", "static/logo_pendidikan.webp"
     try:
         img1 = Image(logo1, width=60, height=60)
     except:
